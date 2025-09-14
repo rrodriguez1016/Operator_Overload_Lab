@@ -204,7 +204,7 @@ void withdrawAmount(vector<BankAccount>& bankVect){
     if(bankVect.size() == 0){
         cout << "No accounts available." << endl;
     } else {
-        //repeatedly prompts user if the account number can't be found or if withdrawn amount is too much
+        //Repeatedly prompts user if the account number can't be found or if withdrawn amount is too much
         while(notFound || tooMuch){
             cout << "Enter Account Number you would like to withdraw money from." << endl;
             userInt = getIntInput();
