@@ -1,3 +1,5 @@
+//Rene Rodriguez 09/13/25  Lab Activities: Objects and Classes I
+//Challenge: Bank Account Management System
 #include<iostream>
 #include<vector>
 #include <string>
@@ -7,6 +9,7 @@ using namespace std;
 double userDouble;
 int userInt;
 string userString;
+//BankAccount class
 class BankAccount {
     public:
         BankAccount(){
@@ -32,6 +35,7 @@ class BankAccount {
         string accountHolderName;
         double balance;
 };
+//Out of class definition
 string BankAccount::GetAccNum() const {
     return accountNumber;
 }
@@ -54,6 +58,7 @@ void BankAccount::Withdraw(double withdrawAmount){
         balance -= withdrawAmount;
     }
 }
+//Prompting user
 void promptUser(){
     cout << "What would you like to do?" << endl;
     cout << "\t 1. Create account" << endl;
@@ -63,6 +68,7 @@ void promptUser(){
     cout << "\t 5. Withdraw" << endl;
     cout << "\t 0. Quit" << endl;
 }
+/*I differentiated against double input and integer input*/
 double getdoubleInput(){
     double input;
     cin >> input;
@@ -99,9 +105,11 @@ int getIntInput(){
     cout << "You entered " << input << endl;
     return input;
 }
+//Creates an account and adds it to a vector of type BankAccount
 void createAccount(vector<BankAccount>& bankVect){
     BankAccount currAccount;
     cout << "Enter bank account number." << endl;
+    //Repeatedly prompts user if they inputted an already existing Account Number
     do {
         userInt = getIntInput();
         for (int i = 0; i < bankVect.size(); ++i){
@@ -114,8 +122,10 @@ void createAccount(vector<BankAccount>& bankVect){
         }
     } while (currAccount.GetAccNum() == to_string(userInt));
     cout << "Enter Name" << endl;
+    //Usef getline to get user name but I needed to use a cin.ignore first
     cin.ignore(numeric_limits<streamsize>::max(), '\n');
     getline(cin, userString);
+    //Creating a new BankAccount with userInput and I put it into the vector
     BankAccount newAccount = BankAccount(to_string(userInt), userString, 0.0);
     bankVect.push_back(newAccount);
 }
@@ -135,19 +145,23 @@ void listAccounts(vector<BankAccount>& bankVect){
 void changeAccountName(vector<BankAccount>& bankVect){
     BankAccount currAcc;
     bool notFound = true;
+    //Handles if there is nothing in vector
     if (bankVect.size() == 0){
         cout << "No accounts available." << endl;
     } else {
+        //Prompts user repeatedly if account number can't be found
         while(notFound){
             cout << "Enter Account Number you would like to change name of." << endl;
             userInt = getIntInput();
             for (int i = 0; i < bankVect.size(); ++i){
                 currAcc = bankVect.at(i);
+                //Had to convert userInt to string to compare
                 if(currAcc.GetAccNum() == to_string(userInt)){
                     notFound = false;
                     cout << "Enter new name" << endl;
                     cin.ignore(numeric_limits<streamsize>::max(), '\n');
                     getline(cin, userString);
+                    //I used brackets so I could access the actual object within the vector and not a copy
                     bankVect[i].SetAccHolder(userString);
                     break;
                 }
@@ -190,6 +204,7 @@ void withdrawAmount(vector<BankAccount>& bankVect){
     if(bankVect.size() == 0){
         cout << "No accounts available." << endl;
     } else {
+        //repeatedly prompts user if the account number can't be found or if withdrawn amount is too much
         while(notFound || tooMuch){
             cout << "Enter Account Number you would like to withdraw money from." << endl;
             userInt = getIntInput();
@@ -199,6 +214,7 @@ void withdrawAmount(vector<BankAccount>& bankVect){
                     notFound = false;
                     cout << "Enter withdrawal amount" << endl;
                     userDouble = getdoubleInput();
+                    //Checks if there is sufficient funds
                     if (bankVect[i].GetBalance() >= userDouble){
                         bankVect[i].Withdraw(userDouble);
                         tooMuch = false;
@@ -217,7 +233,7 @@ void withdrawAmount(vector<BankAccount>& bankVect){
 int main()
 {
     vector<BankAccount> accounts;
-    BankAccount currAccount;
+    //While + Switch combo that will return 0 if user enters 0 which will cause program to exit while loop
     while (true) {
         promptUser();
         userInt = getIntInput();
