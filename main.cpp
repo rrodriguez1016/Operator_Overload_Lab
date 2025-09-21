@@ -4,11 +4,30 @@
 #include<vector>
 #include <string>
 #include<limits>
+#include<stdexcept>
 using namespace std;
 
 double userDouble;
 int userInt;
 string userString;
+int getIntInput(){
+    int input;
+    cin >> input;
+    while(input < 0 || cin.fail()){
+        if (cin.fail()) {
+            cout << "Invalid input, try again.\n";
+            cin.clear();
+            cin.ignore(numeric_limits<streamsize>::max(), '\n'); 
+        }
+        if(input < 0){
+            cout << "Enter a positive number" << endl; 
+        }
+        cin >> input;
+
+    }
+    cout << "You entered " << input << endl;
+    return input;
+}
 //BankAccount class
 class BankAccount {
     public:
@@ -23,6 +42,8 @@ class BankAccount {
             balance = bal;
             
         }
+        static BankAccount createAccountFromInput(vector<BankAccount>& bankVect);
+        static void printAccount(const BankAccount& account);
         BankAccount(const BankAccount& other);
         ~BankAccount();
         BankAccount& operator+=(double amount){
@@ -30,6 +51,14 @@ class BankAccount {
                 throw invalid_argument("Cannot add a non-positive amount.");
             }
             this->balance = this->balance + amount;
+            return *this;
+        }
+        BankAccount& operator=(const BankAccount& other){
+            if(this != &other){
+            accountNumber = other.accountNumber;
+            accountHolderName = other.accountHolderName;
+            balance = other.balance;
+            }
             return *this;
         }
         BankAccount& operator-=(double amount){
@@ -59,13 +88,33 @@ class BankAccount {
 };
 //Out of class definition
 BankAccount::BankAccount(const BankAccount& other) : accountHolderName(other.accountHolderName), accountNumber(other.accountNumber), balance(other.balance){}
-BankAccount& BankAccount::operator=(const BankAccount& other){
-    if(this != &other){
-        accountNumber = other.accountNumber;
-        accountHolderName = other.accountHolderName;
-        balance = other.balance;
-    }
-    return *this;
+void BankAccount::printAccount(const BankAccount& account){
+    cout << "Account Number: " << account.GetAccNum() << endl
+    << "Account Holder Name: " << account.GetAccHolder() << endl
+    << "Account Balance: " << account.GetBalance() << endl;
+}
+BankAccount BankAccount::createAccountFromInput(vector<BankAccount>& bankVect){
+    BankAccount currAccount;
+    cout << "Enter bank account number." << endl;
+    //Repeatedly prompts user if they inputted an already existing Account Number
+    do {
+        userInt = getIntInput();
+        for (int i = 0; i < bankVect.size(); ++i){
+            currAccount = bankVect.at(i);
+            if (currAccount.GetAccNum() == to_string(userInt)){
+                cout << "Account number already exists." << endl
+                << "Enter new number." << endl;
+                break;
+            }
+        }
+    } while (currAccount.GetAccNum() == to_string(userInt));
+    cout << "Enter Name" << endl;
+    //Usef getline to get user name but I needed to use a cin.ignore first
+    cin.ignore(numeric_limits<streamsize>::max(), '\n');
+    getline(cin, userString);
+    //Creating a new BankAccount with userInput and I put it into the vector
+    BankAccount newAccount = BankAccount(to_string(userInt), userString, 0.0);
+    return newAccount;
 }
 bool BankAccount::operator==(const BankAccount& other) const {
     return this->accountNumber == other.accountNumber;
@@ -112,24 +161,6 @@ void promptUser(){
 /*I differentiated against double input and integer input*/
 double getdoubleInput(){
     double input;
-    cin >> input;
-    while(input < 0 || cin.fail()){
-        if (cin.fail()) {
-            cout << "Invalid input, try again.\n";
-            cin.clear();
-            cin.ignore(numeric_limits<streamsize>::max(), '\n'); 
-        }
-        if(input < 0){
-            cout << "Enter a positive number" << endl; 
-        }
-        cin >> input;
-
-    }
-    cout << "You entered " << input << endl;
-    return input;
-}
-int getIntInput(){
-    int input;
     cin >> input;
     while(input < 0 || cin.fail()){
         if (cin.fail()) {
