@@ -23,6 +23,8 @@ class BankAccount {
             balance = bal;
             
         }
+        BankAccount(const BankAccount& other);
+        ~BankAccount();
         string GetAccNum() const;
         string GetAccHolder() const;
         double GetBalance() const;
@@ -36,6 +38,16 @@ class BankAccount {
         double balance;
 };
 //Out of class definition
+BankAccount::BankAccount(const BankAccount& other) : accountHolderName(other.accountHolderName), accountNumber(accountNumber), balance(other.balance){}
+BankAccount& BankAccount::operator=(const BankAccount& other){
+    if(this != &other){
+        accountNumber = other.accountNumber;
+        accountHolderName = other.accountHolderName;
+        balance = other.balance;
+    }
+    return *this;
+}
+BankAccount::~BankAccount(){}
 string BankAccount::GetAccNum() const {
     return accountNumber;
 }
