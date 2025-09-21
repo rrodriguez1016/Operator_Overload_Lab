@@ -193,6 +193,7 @@ void promptUser(){
     cout << "\t 5. Withdraw" << endl;
     cout << "\t 6. Create a copy of an account" << endl;
     cout << "\t 7. Delete Account" << endl;
+    cout << "\t 8. Compare Accounts" << endl;
     cout << "\t 0. Quit" << endl;
 }
 
@@ -356,6 +357,74 @@ void deleteAccount(vector<BankAccount>& bankVect){
         }
     }
 }
+// Compare two accounts using overloaded comparison operators
+void compareAccounts(vector<BankAccount>& bankVect) {
+    bool notFound = true;
+    BankAccount account1;  // first account to compare
+    BankAccount account2;  // second account to compare
+
+    // Check if there are at least 2 accounts in the system
+    if (bankVect.empty() || bankVect.size() < 2){
+        if (bankVect.empty()){
+            cout << "No accounts" << endl;
+        } else {
+            cout << "Only 1 account to compare. Try creating another account." << endl;
+        }
+    } else {
+        // ================= Select First Account =================
+        while (notFound){
+            cout << "Enter account number of first account you want to compare." << endl;
+            cin >> userString;
+            for (int i = 0; i < bankVect.size(); i++){
+                // Search for account number entered by user
+                if (bankVect[i].GetAccNum() == userString){
+                    notFound = false;
+                    account1 = bankVect[i];   // copy account into account1
+                    break;
+                }
+            }
+            if (notFound){
+                cout << "Account not found! Try again." << endl;
+            }
+        }
+
+        // Reset flag for second search
+        notFound = true;
+
+        // ================= Select Second Account =================
+        while (notFound){
+            cout << "Enter account number of second account you want to compare." << endl;
+            cin >> userString;
+            for (int i = 0; i < bankVect.size(); i++){
+                if (bankVect[i].GetAccNum() == userString){
+                    notFound = false;
+                    account2 = bankVect[i];   // copy account into account2
+                    break;
+                }
+            }
+            if (notFound){
+                cout << "Account not found! Try again." << endl;
+            }
+        }
+
+        // ================= Compare Accounts =================
+        // Uses my overloaded operators:
+        //   operator> compares balances
+        if (account1 > account2) {
+            cout << "Account Number: " << account1.GetAccNum() 
+                 << " has a greater balance than Account Number: " 
+                 << account2.GetAccNum() << endl;
+        } else if (account2 > account1) {
+            cout << "Account Number: " << account2.GetAccNum() 
+                 << " has a greater balance than Account Number: " 
+                 << account1.GetAccNum() << endl;
+        } else {
+            cout << "Account Number: " << account1.GetAccNum() 
+                 << " and Account Number: " << account2.GetAccNum() 
+                 << " have equal balances." << endl;
+        }
+    }
+}
 
 // ================= Main Program =================
 int main()
@@ -389,6 +458,9 @@ int main()
                 break;
             case 7: // Delete account
                 deleteAccount(accounts);
+                break;
+            case 8: //Compare accounts
+                compareAccounts(accounts);
                 break;
             case 0: // Exit
                 cout << "Goodbye!" << endl;
