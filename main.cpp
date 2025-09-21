@@ -25,6 +25,26 @@ class BankAccount {
         }
         BankAccount(const BankAccount& other);
         ~BankAccount();
+        BankAccount& operator+=(double amount){
+            if (amount <= 0) {
+                throw invalid_argument("Cannot add a non-positive amount.");
+            }
+            this->balance = this->balance + amount;
+            return *this;
+        }
+        BankAccount& operator-=(double amount){
+            if (amount <= 0) {
+                throw invalid_argument("Cannot enter a non-positive amount.");
+            }
+            if (this->balance < amount) {
+                throw invalid_argument("Insufficient funds.");
+            }
+            this->balance = this->balance - amount;
+            return *this;
+        }
+        bool operator==(const BankAccount& other) const;
+        bool operator<(const BankAccount& other) const;
+        bool operator>(const BankAccount& other) const;
         string GetAccNum() const;
         string GetAccHolder() const;
         double GetBalance() const;
@@ -38,7 +58,7 @@ class BankAccount {
         double balance;
 };
 //Out of class definition
-BankAccount::BankAccount(const BankAccount& other) : accountHolderName(other.accountHolderName), accountNumber(accountNumber), balance(other.balance){}
+BankAccount::BankAccount(const BankAccount& other) : accountHolderName(other.accountHolderName), accountNumber(other.accountNumber), balance(other.balance){}
 BankAccount& BankAccount::operator=(const BankAccount& other){
     if(this != &other){
         accountNumber = other.accountNumber;
@@ -46,6 +66,15 @@ BankAccount& BankAccount::operator=(const BankAccount& other){
         balance = other.balance;
     }
     return *this;
+}
+bool BankAccount::operator==(const BankAccount& other) const {
+    return this->accountNumber == other.accountNumber;
+}
+bool BankAccount::operator<(const BankAccount& other) const {
+    return this->balance < other.balance;
+}
+bool BankAccount::operator>(const BankAccount& other) const {
+    return this->balance > other.balance;
 }
 BankAccount::~BankAccount(){}
 string BankAccount::GetAccNum() const {
