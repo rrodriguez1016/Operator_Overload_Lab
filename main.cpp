@@ -1,19 +1,26 @@
-//Rene Rodriguez 09/13/25  Lab Activities: Objects and Classes I
-//Challenge: Bank Account Management System
+// Rene Rodriguez 09/21/25  
+// Lab Activities: Advanced Objects and Classes II
+// Challenge: Enhancing the Bank Account Management System
+
 #include<iostream>
 #include<vector>
-#include <string>
+#include<string>
 #include<limits>
 #include<stdexcept>
 using namespace std;
 
+// Global variables used for user input
 double userDouble;
 int userInt;
 string userString;
+
+// ================= Utility Functions =================
+
+// Helper function for validated integer input
 int getIntInput(){
     int input;
     cin >> input;
-    while(input < 0 || cin.fail()){
+    while(input < 0 || cin.fail()){  // keep asking until valid positive integer
         if (cin.fail()) {
             cout << "Invalid input, try again.\n";
             cin.clear();
@@ -23,57 +30,54 @@ int getIntInput(){
             cout << "Enter a positive number" << endl; 
         }
         cin >> input;
-
     }
     cout << "You entered " << input << endl;
     return input;
 }
-//BankAccount class
+
+// ================= BankAccount Class =================
 class BankAccount {
     public:
+        // Default constructor
         BankAccount(){
             accountNumber = "000000";
             accountHolderName = "Unknown";
             balance = 0.0;
         }
+
+        // Parameterized constructor
         BankAccount(string accNum, string holderName, double bal){
             accountNumber = accNum;
             accountHolderName = holderName;
             balance = bal;
-            
         }
+
+        // Static helper functions
         static BankAccount createAccountFromInput(vector<BankAccount>& bankVect);
         static void printAccount(const BankAccount& account);
-        BankAccount(const BankAccount& other);
-        ~BankAccount();
-        BankAccount& operator+=(double amount){
-            if (amount <= 0) {
-                throw invalid_argument("Cannot add a non-positive amount.");
-            }
-            this->balance = this->balance + amount;
-            return *this;
-        }
-        BankAccount& operator=(const BankAccount& other){
-            if(this != &other){
-            accountNumber = other.accountNumber;
-            accountHolderName = other.accountHolderName;
-            balance = other.balance;
+
+        // Rule of Three (copy constructor, destructor, assignment operator)
+        BankAccount(const BankAccount& other);   // copy constructor
+        ~BankAccount();                          // destructor
+        BankAccount& operator=(const BankAccount& other){  // assignment operator
+            if(this != &other){ // prevent self-assignment
+                accountNumber = other.accountNumber;
+                accountHolderName = other.accountHolderName;
+                balance = other.balance;
             }
             return *this;
         }
-        BankAccount& operator-=(double amount){
-            if (amount <= 0) {
-                throw invalid_argument("Cannot enter a non-positive amount.");
-            }
-            if (this->balance < amount) {
-                throw invalid_argument("Insufficient funds.");
-            }
-            this->balance = this->balance - amount;
-            return *this;
-        }
+
+        // Overloaded operators for deposits and withdrawals
+        BankAccount& operator+=(double amount);  // deposit
+        BankAccount& operator-=(double amount);  // withdraw
+
+        // Comparison operators
         bool operator==(const BankAccount& other) const;
         bool operator<(const BankAccount& other) const;
         bool operator>(const BankAccount& other) const;
+
+        // Getters and setters
         string GetAccNum() const;
         string GetAccHolder() const;
         double GetBalance() const;
@@ -86,36 +90,73 @@ class BankAccount {
         string accountHolderName;
         double balance;
 };
-//Out of class definition
-BankAccount::BankAccount(const BankAccount& other) : accountHolderName(other.accountHolderName), accountNumber(other.accountNumber), balance(other.balance){}
+
+// ================= BankAccount Definitions =================
+
+// Copy constructor (performs deep copy of members)
+BankAccount::BankAccount(const BankAccount& other) 
+    : accountHolderName(other.accountHolderName),
+      accountNumber(other.accountNumber),
+      balance(other.balance) {}
+
+// Destructor (empty since no dynamic memory)
+BankAccount::~BankAccount(){}
+
+// Operator overload for += (deposit money)
+BankAccount& BankAccount::operator+=(double amount){
+    if (amount <= 0) {
+        throw invalid_argument("Cannot add a non-positive amount.");
+    }
+    this->balance += amount;
+    return *this;
+}
+
+// Operator overload for -= (withdraw money)
+BankAccount& BankAccount::operator-=(double amount){
+    if (amount <= 0) {
+        throw invalid_argument("Cannot enter a non-positive amount.");
+    }
+    if (this->balance < amount) {
+        throw invalid_argument("Insufficient funds.");
+    }
+    this->balance -= amount;
+    return *this;
+}
+
+// Print account details
 void BankAccount::printAccount(const BankAccount& account){
     cout << "Account Number: " << account.GetAccNum() << endl
-    << "Account Holder Name: " << account.GetAccHolder() << endl
-    << "Account Balance: " << account.GetBalance() << endl;
+         << "Account Holder Name: " << account.GetAccHolder() << endl
+         << "Account Balance: " << account.GetBalance() << endl;
 }
+
+// Create new account by prompting user for input
 BankAccount BankAccount::createAccountFromInput(vector<BankAccount>& bankVect){
     BankAccount currAccount;
     cout << "Enter bank account number." << endl;
-    //Repeatedly prompts user if they inputted an already existing Account Number
+    // Make sure account number is unique
     do {
         userInt = getIntInput();
         for (int i = 0; i < bankVect.size(); ++i){
             currAccount = bankVect.at(i);
             if (currAccount.GetAccNum() == to_string(userInt)){
                 cout << "Account number already exists." << endl
-                << "Enter new number." << endl;
+                     << "Enter new number." << endl;
                 break;
             }
         }
     } while (currAccount.GetAccNum() == to_string(userInt));
+
     cout << "Enter Name" << endl;
-    //Usef getline to get user name but I needed to use a cin.ignore first
-    cin.ignore(numeric_limits<streamsize>::max(), '\n');
+    cin.ignore(numeric_limits<streamsize>::max(), '\n'); // clear buffer
     getline(cin, userString);
-    //Creating a new BankAccount with userInput and I put it into the vector
+
+    // Return new BankAccount with user input
     BankAccount newAccount = BankAccount(to_string(userInt), userString, 0.0);
     return newAccount;
 }
+
+// Comparison operators
 bool BankAccount::operator==(const BankAccount& other) const {
     return this->accountNumber == other.accountNumber;
 }
@@ -125,22 +166,13 @@ bool BankAccount::operator<(const BankAccount& other) const {
 bool BankAccount::operator>(const BankAccount& other) const {
     return this->balance > other.balance;
 }
-BankAccount::~BankAccount(){}
-string BankAccount::GetAccNum() const {
-    return accountNumber;
-}
-string BankAccount::GetAccHolder() const {
-    return accountHolderName;
-}
-double BankAccount::GetBalance() const {
-    return balance;
-}
-void BankAccount::SetAccHolder(string holderName){
-    accountHolderName = holderName;
-}
-void BankAccount::Deposit(double depositAmount){
-    balance += depositAmount;
-}
+
+// Getter and setter definitions
+string BankAccount::GetAccNum() const { return accountNumber; }
+string BankAccount::GetAccHolder() const { return accountHolderName; }
+double BankAccount::GetBalance() const { return balance; }
+void BankAccount::SetAccHolder(string holderName){ accountHolderName = holderName; }
+void BankAccount::Deposit(double depositAmount){ balance += depositAmount; }
 void BankAccount::Withdraw(double withdrawAmount){
     if (withdrawAmount > balance){
         cout << "Insufficient funds." << endl;
@@ -148,7 +180,10 @@ void BankAccount::Withdraw(double withdrawAmount){
         balance -= withdrawAmount;
     }
 }
-//Prompting user
+
+// ================= Menu and Account Functions =================
+
+// Show menu options
 void promptUser(){
     cout << "What would you like to do?" << endl;
     cout << "\t 1. Create account" << endl;
@@ -156,9 +191,12 @@ void promptUser(){
     cout << "\t 3. Change account holder name" << endl;
     cout << "\t 4. Deposit" << endl;
     cout << "\t 5. Withdraw" << endl;
+    cout << "\t 6. Create a copy of an account" << endl;
+    cout << "\t 7. Delete Account" << endl;
     cout << "\t 0. Quit" << endl;
 }
-/*I differentiated against double input and integer input*/
+
+// Validated double input
 double getdoubleInput(){
     double input;
     cin >> input;
@@ -172,68 +210,37 @@ double getdoubleInput(){
             cout << "Enter a positive number" << endl; 
         }
         cin >> input;
-
     }
     cout << "You entered " << input << endl;
     return input;
 }
-//Creates an account and adds it to a vector of type BankAccount
-void createAccount(vector<BankAccount>& bankVect){
-    BankAccount currAccount;
-    cout << "Enter bank account number." << endl;
-    //Repeatedly prompts user if they inputted an already existing Account Number
-    do {
-        userInt = getIntInput();
-        for (int i = 0; i < bankVect.size(); ++i){
-            currAccount = bankVect.at(i);
-            if (currAccount.GetAccNum() == to_string(userInt)){
-                cout << "Account number already exists." << endl
-                << "Enter new number." << endl;
-                break;
-            }
-        }
-    } while (currAccount.GetAccNum() == to_string(userInt));
-    cout << "Enter Name" << endl;
-    //Usef getline to get user name but I needed to use a cin.ignore first
-    cin.ignore(numeric_limits<streamsize>::max(), '\n');
-    getline(cin, userString);
-    //Creating a new BankAccount with userInput and I put it into the vector
-    BankAccount newAccount = BankAccount(to_string(userInt), userString, 0.0);
-    bankVect.push_back(newAccount);
-}
+
+// List all accounts
 void listAccounts(vector<BankAccount>& bankVect){
-    BankAccount currAccount;
-    if (bankVect.size() == 0){
+    if (bankVect.empty()){
         cout << "No accounts" << endl;
     } else {
         for (int i = 0; i < bankVect.size(); ++i){
-            currAccount = bankVect.at(i);
-            cout << "Account Number: " << currAccount.GetAccNum() << endl
-            << "Account Holder: " << currAccount.GetAccHolder() << endl
-            << "Account Balance: " << currAccount.GetBalance() << endl;
+            BankAccount::printAccount(bankVect.at(i));
         }
     }
 }
+
+// Change account holder name
 void changeAccountName(vector<BankAccount>& bankVect){
-    BankAccount currAcc;
     bool notFound = true;
-    //Handles if there is nothing in vector
-    if (bankVect.size() == 0){
+    if (bankVect.empty()){
         cout << "No accounts available." << endl;
     } else {
-        //Prompts user repeatedly if account number can't be found
         while(notFound){
             cout << "Enter Account Number you would like to change name of." << endl;
             userInt = getIntInput();
             for (int i = 0; i < bankVect.size(); ++i){
-                currAcc = bankVect.at(i);
-                //Had to convert userInt to string to compare
-                if(currAcc.GetAccNum() == to_string(userInt)){
+                if(bankVect[i].GetAccNum() == to_string(userInt)){
                     notFound = false;
                     cout << "Enter new name" << endl;
                     cin.ignore(numeric_limits<streamsize>::max(), '\n');
                     getline(cin, userString);
-                    //I used brackets so I could access the actual object within the vector and not a copy
                     bankVect[i].SetAccHolder(userString);
                     break;
                 }
@@ -244,51 +251,49 @@ void changeAccountName(vector<BankAccount>& bankVect){
         }
     }
 }
+
+// Deposit money into an account
 void depositAmount(vector<BankAccount>& bankVect){
-    BankAccount currAcc;
     bool notFound = true;
-    if(bankVect.size() == 0){
+    if(bankVect.empty()){
         cout << "No accounts available." << endl;
     } else {
         while(notFound){
             cout << "Enter Account Number you would like to deposit money." << endl;
             userInt = getIntInput();
             for (int i = 0; i < bankVect.size(); ++i){
-                currAcc = bankVect.at(i);
-                if(currAcc.GetAccNum() == to_string(userInt)){
+                if(bankVect[i].GetAccNum() == to_string(userInt)){
                     notFound = false;
                     cout << "Enter deposit amount" << endl;
                     userDouble = getdoubleInput();
-                    bankVect[i].Deposit(userDouble);
+                    bankVect[i] += userDouble;  // uses overloaded +=
                     break;
                 }
             }
             if(notFound){
-            cout << "Account Number not found. Try Again." << endl;
+                cout << "Account Number not found. Try Again." << endl;
             }
         }
     }
 }
+
+// Withdraw money from an account
 void withdrawAmount(vector<BankAccount>& bankVect){
-    BankAccount currAcc;
     bool notFound = true;
     bool tooMuch = true;
-    if(bankVect.size() == 0){
+    if(bankVect.empty()){
         cout << "No accounts available." << endl;
     } else {
-        //Repeatedly prompts user if the account number can't be found or if withdrawn amount is too much
         while(notFound || tooMuch){
             cout << "Enter Account Number you would like to withdraw money from." << endl;
             userInt = getIntInput();
             for (int i = 0; i < bankVect.size(); ++i){
-                currAcc = bankVect.at(i);
-                if(currAcc.GetAccNum() == to_string(userInt)){
+                if(bankVect[i].GetAccNum() == to_string(userInt)){
                     notFound = false;
                     cout << "Enter withdrawal amount" << endl;
                     userDouble = getdoubleInput();
-                    //Checks if there is sufficient funds
                     if (bankVect[i].GetBalance() >= userDouble){
-                        bankVect[i].Withdraw(userDouble);
+                        bankVect[i] -= userDouble;  // uses overloaded -=
                         tooMuch = false;
                     } else {
                         cout << "Insufficient funds." << endl;
@@ -297,39 +302,98 @@ void withdrawAmount(vector<BankAccount>& bankVect){
                 }
             }
             if(notFound){
-            cout << "Account Number not found. Try Again." << endl;
+                cout << "Account Number not found. Try Again." << endl;
             }
         }
     }
 }
+
+// Create a duplicate of an existing account
+void createCopy(vector<BankAccount>& bankVect) {
+    bool notFound = true;
+    if (bankVect.empty()){
+        cout << "No accounts" << endl;
+    } else {
+        while (notFound){
+            cout << "Enter account number of account you want to copy." << endl;
+            cin >> userString;
+            for (int i = 0; i < bankVect.size(); i++){
+                if (bankVect[i].GetAccNum() == userString){
+                    notFound = false;
+                    BankAccount newAccount = bankVect[i]; // copy constructor
+                    bankVect.push_back(newAccount);
+                    cout << "Account copied successfully." << endl;
+                    break;
+                }
+            }
+            if (notFound) {
+                cout << "Account not found! Try again." << endl;
+            }
+        }
+    }
+}
+
+// Delete an existing account
+void deleteAccount(vector<BankAccount>& bankVect){
+    bool notFound = true;
+    if (bankVect.empty()){
+        cout << "No accounts" << endl;
+    } else {
+        while (notFound){
+            cout << "Enter account number of account you want to delete." << endl;
+            cin >> userString;
+            for (int i = 0; i < bankVect.size(); i++){
+                if (bankVect[i].GetAccNum() == userString){
+                    notFound = false;
+                    bankVect.erase(bankVect.begin() + i);
+                    cout << "Account deleted successfully." << endl;
+                    break;
+                }
+            }
+            if (notFound){
+                cout << "Account not found! Try again." << endl;
+            }
+        }
+    }
+}
+
+// ================= Main Program =================
 int main()
 {
     vector<BankAccount> accounts;
-    //While + Switch combo that will return 0 if user enters 0 which will cause program to exit while loop
+    BankAccount newAccount;
+
+    // Main menu loop
     while (true) {
         promptUser();
         userInt = getIntInput();
         switch (userInt) {
-            case 1:
-                createAccount(accounts);
+            case 1: // Create account
+                newAccount = BankAccount::createAccountFromInput(accounts);
+                accounts.push_back(newAccount);
                 break;
-            case 2:
+            case 2: // List accounts
                 listAccounts(accounts);
                 break;
-            case 3:
+            case 3: // Change account name
                 changeAccountName(accounts);
                 break;
-            case 4:
+            case 4: // Deposit
                 depositAmount(accounts);
                 break;
-            case 5:
+            case 5: // Withdraw
                 withdrawAmount(accounts);
                 break;
-            case 0:
+            case 6: // Copy account
+                createCopy(accounts);
+                break;
+            case 7: // Delete account
+                deleteAccount(accounts);
+                break;
+            case 0: // Exit
                 cout << "Goodbye!" << endl;
                 return 0;
         }
     }
-    
     return 0;
 }
